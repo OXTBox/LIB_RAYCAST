@@ -1,0 +1,66 @@
+-- lib_raycast (LIB_RAYCAST, 23 Nov 2026): the maths with no window.
+-- A 7x5 room; the camera in cell (2,3) looking east at the far wall x = 6.
+local tP, tF, tL, tN, tA, tT, tX, tY, tV, tPts
+put "/home/igame3d/projects" into tP
+start using stack (tP & "/LIB_RAYCAST/livecode/lib_raycast.livecodescript")
+Ray.SetSolid "#G"
+Ray.SetMap "#######" & cr & "#     #" & cr & "#     #" & cr & "#     #" & cr & "#######"
+put ck("map size", Ray.Size(), "7,5") & return after tLog
+put ck("a wall is solid", Ray.SolidAt(0.5, 0.5), true) & return after tLog
+put ck("the floor is open", Ray.SolidAt(1.5, 2.5), false) & return after tLog
+-- a ray east from x 1.5 meets the wall plane x = 6 after 4.5 cells
+put Ray.Cast(1.5, 2.5, 0) into tA
+put ck("cast east: distance 4.5", round(item 1 of tA, 3), 4.5) & return after tLog
+put ck("cast east: wall cell 7,3", item 2 to 3 of tA, "7,3") & return after tLog
+put ck("line of sight across the room", Ray.Sees(1.5, 1.5, 5.5, 3.5), true) & return after tLog
+-- the view: 640x400, 66 degrees, 80 columns
+Ray.Camera 1.5, 2.5, 0, 66, 640, 400, 80, 0.5
+put Ray.Faces() into tF
+put "INFO " & Ray.Stats() & return after tLog
+set the itemDel to "|"
+-- the far wall is one face however many cells it crosses (rows 2..4 joined)
+put 0 into tN
+repeat for each line tL in tF
+   if item 11 of tL = 0 and item 1 of tL > 4 then add 1 to tN
+end repeat
+put ck("the far wall is ONE face", tN, 1) & return after tLog
+put ck("faces are sorted far first", item 1 of line 1 of tF >= item 1 of line -1 of tF, true) & return after tLog
+-- straight ahead the far wall is 4.5 deep: a cell is 320/tan(33)/4.5 px tall, its middle on the horizon
+set the itemDel to comma
+put Ray.DepthAt(320) into tA
+put ck("depth straight ahead", round(tA, 3), 4.5) & return after tLog
+put Ray.Project(6, 2.5, 1) into tT
+put ck("ceiling edge ahead projects to x 320", item 1 of tT, 320) & return after tLog
+put ck("its height matches Ray.Scale", round(200 - item 2 of tT, 1), round(Ray.Scale(4.5) / 2, 1)) & return after tLog
+set the itemDel to "|"
+-- the corner of the room (x 6, y 1) is a real corner: some face ends exactly where it projects
+set the itemDel to comma
+put item 1 of Ray.Project(6, 1, 0) into tX
+set the itemDel to "|"
+put false into tV
+repeat for each line tL in tF
+   if (abs(item 2 of tL - tX) < 0.2 and item 9 of tL) or (abs(item 3 of tL - tX) < 0.2 and item 10 of tL) then put true into tV
+end repeat
+put ck("the room corner is an exact, real face edge", tV, true) & return after tLog
+set the itemDel to comma
+-- moving into a wall slides along it
+put 1.5 into tX
+put 2.5 into tY
+Ray.Move tX, tY, -2, 0.5, 0.25
+put ck("walk into the west wall: stopped at the wall, slid south", round(tX, 2) & "," & round(tY, 2), "1.5,3") & return after tLog
+-- sprites: something behind the far wall is not visible, something in front is
+put ck("a sprite behind the wall is hidden", Ray.Visible(300, 340, 9), empty) & return after tLog
+put ck("a sprite in front is seen whole", Ray.Visible(300, 340, 2), "300,340") & return after tLog
+put Ray.ClipX("0,0" & cr & "100,0" & cr & "100,100" & cr & "0,100", 20, 60) into tPts
+put ck("a square cut to the band 20..60", the number of lines of tPts, 4) & return after tLog
+put ck("floor grid has segments", the number of lines of Ray.FloorGrid(4) > 8, true) & return after tLog
+-- a door opens: the cell turns open
+Ray.SetCell 7, 3, space
+put ck("an opened cell lets the ray through to the edge", item 2 to 3 of Ray.Cast(1.5, 2.5, 0), "8,3") & return after tLog
+-- speed: 30 views of 160 columns
+put the milliseconds into tT
+repeat 30 times
+   Ray.Camera 1.5 + random(30) / 10, 2.5, random(360), 66, 640, 400, 160, 0.5
+end repeat
+put "INFO 160 columns: " & round((the milliseconds - tT) / 30, 1) & " ms a view" & return after tLog
+return tLog
