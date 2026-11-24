@@ -297,7 +297,27 @@ private command Ray.CloseRun pRun
       put Ray.ScreenX(pRun["amax"], tPlane) into tS2
    end if
    -- which end is a real corner: the wall does not go on in the same plane past it
-   if tS1 <= tS2 then
+   -- an end behind the eye has no screen x: the face runs off the screen on that side, and the end
+   -- that can be seen is the edge nearer to it (23 Nov fix: the owner saw a wall close on the right
+   -- vanish at 1-15 degrees of turn, because that end was taken as the wrong edge)
+   if tS1 is empty or tS2 is empty then
+      if tS1 is empty then
+         put tS2 into tS1
+         put "max" into tLoEnd
+      else
+         put "min" into tLoEnd
+      end if
+      put empty into tS2
+      if tS1 is not empty and (tS1 - tXL) <= (tXR - tS1) then
+         put tS1 into tLo
+         put empty into tHi
+         put tLoEnd into tHiEnd
+      else
+         put empty into tLo
+         put tS1 into tHi
+         put tLoEnd into tHiEnd
+      end if
+   else if tS1 <= tS2 then
       put tS1 into tLo
       put tS2 into tHi
       put "min" into tLoEnd

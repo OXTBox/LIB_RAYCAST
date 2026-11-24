@@ -1,0 +1,21 @@
+-- the owner's bug (23 Nov 2026): close to a wall on the right, turned 1-15 degrees, the wall vanished
+-- (its near end is behind the eye). A corridor running east; stand near the south wall, turn right.
+local tP, tA, tF, tL, tW, tBad
+put "/home/igame3d/projects" into tP
+start using stack (tP & "/LIB_RAYCAST/livecode/lib_raycast.livecodescript")
+Ray.SetSolid "#"
+Ray.SetMap "############" & cr & "#          #" & cr & "#          #" & cr & "############"
+put empty into tBad
+repeat with tA = 0 to 40
+   Ray.Camera 2.5, 2.8, tA, 66, 640, 400, 120, 0.5
+   put 0 into tW
+   set the itemDel to "|"
+   repeat for each line tL in Ray.Faces()
+      -- the south wall's face (side 1), reaching the right of the screen
+      if item 11 of tL is 1 and item 3 of tL > 600 then put max(tW, item 3 of tL - item 2 of tL) into tW
+   end repeat
+   set the itemDel to comma
+   if tW < 50 then put tA & " " after tBad
+end repeat
+put ck("the right-hand wall is drawn at every turn 0..40", tBad, empty) & return after tLog
+return tLog
