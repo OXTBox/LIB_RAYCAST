@@ -15,3 +15,8 @@ That works over Engine 1 (Vibecode3D, pure xTalk) and over the xRay bench pictur
 
 Sources of the method: Scott McDonald's raycaster for LiveCode 6.1.3 (after Andrew Burch's
 Corona raycasting engine), permadi.com's raycasting tutorial, lodev.org's DDA tutorial.
+
+## Licence
+
+GPL-3.0 (see `LICENSE`), because the xTalk work here is built on the GPL-licensed LiveCode Community 9 engine. Copyright (c) 2026 xAction.
+Scott McDonald's raycaster, whose method this library follows, was dedicated by him to the public domain.
